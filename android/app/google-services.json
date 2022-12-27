@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "286191208476",
+    "project_id": "classroom-app-a866a",
+    "storage_bucket": "classroom-app-a866a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286191208476:android:ae7921f15f42d4228637d9",
+        "android_client_info": {
+          "package_name": "com.example.flutter_college_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "286191208476-d1e4hg1takr2l4898bmjjblntkh94nme.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAW4sIJTv_xQitVIPiUjs6U8hBR6WotiSI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "286191208476-d1e4hg1takr2l4898bmjjblntkh94nme.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
