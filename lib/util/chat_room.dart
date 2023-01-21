@@ -1,43 +1,22 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_college_app/util/constants.dart';
 
-// NOTE: to add firebase support, first go to firebase console, generate the
-// firebase json file, and add configuration lines in the gradle files.
-// C.f. this commit: https://github.com/X-Wei/flutter_catalog/commit/48792cbc0de62fc47e0e9ba2cd3718117f4d73d1.
+import 'constants.dart';
+
 class ClassChat extends StatefulWidget {
   const ClassChat({super.key});
 
   @override
-  _ClassChatState createState() => _ClassChatState();
+  ClassChatState createState() => ClassChatState();
 }
 
-class _ClassChatState extends State<ClassChat> {
+class ClassChatState extends State<ClassChat> {
   firebase_auth.User? _user;
-
   late DatabaseReference _firebaseMsgDbRef;
-  String name = '';
-  String photo = '';
-
-  Future senderData() async {
-    await FirebaseFirestore.instance
-        .collection(uType)
-        .doc(uId)
-        .get()
-        .then((value) async {
-      if (value.exists) {
-        setState(() {
-          name = value.data()!['firstName'];
-          photo = value.data()!['photo'];
-        });
-      }
-    });
-  }
 
   final TextEditingController _textController = TextEditingController();
   bool _isComposing = false;
@@ -45,7 +24,6 @@ class _ClassChatState extends State<ClassChat> {
   @override
   void initState() {
     super.initState();
-    senderData();
     final now = DateTime.now().toUtc();
     this._firebaseMsgDbRef = FirebaseDatabase.instance
         .ref()
@@ -103,7 +81,7 @@ class _ClassChatState extends State<ClassChat> {
     final json = val as Map;
     final senderName = json['senderName'] as String? ?? '?? <unknown>';
     final msgText = json['text'] as String? ?? '??';
-    final sentTime = json['timestamp'] as int? ?? 0;
+    final userType = json['userType'] as String? ?? '!!';
     final senderPhotoUrl = json['senderPhotoUrl'] as String?;
     final messageUI = Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -126,7 +104,7 @@ class _ClassChatState extends State<ClassChat> {
               children: <Widget>[
                 Text(senderName, style: Theme.of(context).textTheme.subtitle1),
                 Text(
-                  DateTime.fromMillisecondsSinceEpoch(sentTime).toString(),
+                  userType,
                   style: Theme.of(context).textTheme.caption,
                 ),
                 Text(msgText),
@@ -156,8 +134,6 @@ class _ClassChatState extends State<ClassChat> {
           Flexible(
             child: TextField(
               keyboardType: TextInputType.multiline,
-              // Setting maxLines=null makes the text field auto-expand when one
-              // line is filled up.
               maxLines: null,
               maxLength: 200,
               decoration:
@@ -181,30 +157,6 @@ class _ClassChatState extends State<ClassChat> {
 
   // Triggered when text is submitted (send button pressed).
   Future<void> _onTextMsgSubmitted(String text) async {
-    // Make sure _user is not null.
-    if (this._user == null) {
-      this._user = firebase_auth.FirebaseAuth.instance.currentUser;
-    }
-    if (this._user == null) {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Login required'),
-          content: const Text(
-            'To send messages you need to first log in.\n\n'
-            'Go to the "Firebase login" example, and log in from there. '
-            'You will then be able to send messages.',
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('OK'),
-            )
-          ],
-        ),
-      );
-      return;
-    }
     // Clear input text field.
     _textController.clear();
     setState(() {
@@ -213,10 +165,10 @@ class _ClassChatState extends State<ClassChat> {
     // Send message to firebase realtime database.
     _firebaseMsgDbRef.push().set({
       'senderId': this._user!.uid,
-      'senderName': name,
+      'senderName': fName + ' ' + lName,
       'senderPhotoUrl': photo,
       'text': text,
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
+      'userType': uType,
     });
   }
 }
