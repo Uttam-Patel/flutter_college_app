@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../login/login_screen.dart';
 import '../util/constants.dart';
@@ -19,26 +23,8 @@ class _ProfileState extends State<Profile> {
 
   final String userId = uId;
 
-  String lName = '';
-  String fName = '';
-  String mName = '';
-  String email = '';
-  String phone = '';
-  String course = '';
-  String year = '';
-  String semester = '';
-  String department = '';
-  String accountType = '';
-
-  String photo = '';
-
-  @override
-  void initState() {
-    // TODO: implement initState
-
-    super.initState();
-    userData();
-  }
+  File? _imageFile;
+  final _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +34,26 @@ class _ProfileState extends State<Profile> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             //Profile Image
-            Center(child: profileImage(context)),
+            Center(
+              child: FutureBuilder(
+                future:
+                    FirebaseFirestore.instance.collection(uType).doc(uId).get(),
+                builder: (context, snapshot) {
+                  // Check for errors
+                  if (snapshot.hasError) {
+                    return Container();
+                  }
+
+                  // Once complete, show your application
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return profileImage(context);
+                  }
+
+                  // Otherwise, show something whilst waiting for initialization to complete
+                  return processIndicator();
+                },
+              ),
+            ),
 
             //Student Profile Page Fields
             Visibility(
@@ -98,8 +103,10 @@ class _ProfileState extends State<Profile> {
                 icon: Icon(Icons.logout),
                 onPressed: () async {
                   await FirebaseAuth.instance.signOut().then((value) async {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: ((context) => LogIn())));
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => LogIn()),
+                        (route) => false);
                     await removeLocalData();
                   });
                 },
@@ -120,14 +127,12 @@ class _ProfileState extends State<Profile> {
         "Choose Profile Photo",
       ),
       content: Container(
-        height: 60,
+        height: (this._imageFile == null) ? 80 : 170,
         // margin: EdgeInsets.symmetric(horizontal: 20,vertical: 20),
-        child: IconButton(
-          onPressed: () {},
-          icon: Icon(
-            Icons.file_upload_outlined,
-            size: 50,
-          ),
+        child: Column(
+          children: [
+            (this._imageFile != null) ? pickedImage() : chooseUploadOption()
+          ],
         ),
       ),
       actions: <Widget>[
@@ -135,17 +140,33 @@ class _ProfileState extends State<Profile> {
           child: const Text('Cancel'),
           onPressed: () {
             Navigator.of(context).pop();
+            _clearCatchImage();
           },
         ),
-        TextButton(
-          child: const Text('Upload'),
-          onPressed: () {},
+        Visibility(
+          visible: this._imageFile != null,
+          child: TextButton(
+            child: const Text('Upload'),
+            onPressed: () async {
+              await _uploadImageToFirebaseStorage();
+              await _updateProfileImage();
+              _clearCatchImage();
+              Navigator.of(context).pop();
+            },
+          ),
         ),
       ],
     );
   }
 
   //Profile Image function code
+  CircleAvatar processIndicator() {
+    return CircleAvatar(
+      radius: 80,
+      child: CircularProgressIndicator(),
+    );
+  }
+
   Stack profileImage(context) {
     return Stack(
       children: [
@@ -198,31 +219,104 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Future userData() async {
-    await FirebaseFirestore.instance
-        .collection(uType)
-        .doc(uId)
-        .get()
-        .then((snapshot) async {
-      if (snapshot.exists) {
-        setState(() {
-          fName = snapshot.data()!['firstName'];
-          lName = snapshot.data()!['lastName'];
-          phone = snapshot.data()!['phone'];
-          accountType = snapshot.data()!['accountType'];
-          email = snapshot.data()!['email'];
-          photo = snapshot.data()!['photo'];
+  Future<void> _pickImageFromGallery() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        this._imageFile = File(pickedFile.path);
+      });
+    }
+  }
 
-          if (userType == 'Student') {
-            semester = snapshot.data()!['semester'];
-            year = snapshot.data()!['year'];
-            course = snapshot.data()!['course'];
-          }
-          if (userType == 'Teacher') {
-            department = snapshot.data()!['department'];
-          }
-        });
+  Future<void> _pickImageFromCamera() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        this._imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _uploadImageToFirebaseStorage() async {
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('images/$uType/profiles/${fName}_$lName');
+
+    try {
+      if (this._imageFile != null) {
+        storageRef.putFile(this._imageFile!);
       }
+    } on FirebaseException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.message!),
+      ));
+    }
+  }
+
+  _updateProfileImage() async {
+    if (this._imageFile != null) {
+      String url = await _updateProfilePhotoPath();
+      await FirebaseFirestore.instance
+          .collection(uType)
+          .doc(uId)
+          .update({'photo': url}).catchError((error) => print(error));
+    }
+  }
+
+  Future<String> _updateProfilePhotoPath() async {
+    final imgUrl = FirebaseStorage.instance
+        .ref()
+        .child('images/$uType/profiles/${fName}_$lName')
+        .getDownloadURL();
+    return imgUrl;
+  }
+
+  void _clearCatchImage() {
+    setState(() {
+      this._imageFile = null;
     });
+  }
+
+  Row chooseUploadOption() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        Column(
+          children: [
+            IconButton(
+              padding: EdgeInsets.all(0),
+              icon: const Icon(
+                Icons.photo_camera_outlined,
+                size: 50,
+              ),
+              onPressed: () async => _pickImageFromCamera(),
+              tooltip: 'Shoot picture',
+            ),
+            const Text('Camera'),
+          ],
+        ),
+        Column(
+          children: [
+            IconButton(
+              padding: EdgeInsets.all(0),
+              icon: const Icon(
+                Icons.photo_outlined,
+                size: 50,
+              ),
+              onPressed: () async => _pickImageFromGallery(),
+              tooltip: 'Pick from gallery',
+            ),
+            const Text('Gallery'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  CircleAvatar pickedImage() {
+    return CircleAvatar(
+      radius: 80,
+      backgroundImage: FileImage(this._imageFile!),
+    );
   }
 }

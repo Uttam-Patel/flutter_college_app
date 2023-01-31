@@ -1,26 +1,118 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String uType = '';
 String uId = '';
+String lName = '';
+String fName = '';
+String mName = '';
+String email = '';
+String phone = '';
+String course = '';
+String year = '';
+String semester = '';
+String department = '';
+String accountType = '';
+String studentClass = '';
+String photo = '';
+
+//For class stream
+String classNameStream = '';
+String classJoinedYear = '';
+String classFinalYear = '';
+
+//For Events
+String clicked_event_title = "";
+String clicked_event_about = "";
+String clicked_event_coordinator = "";
+Timestamp? timestamp;
+DateTime? clicked_event_duedate;
+String? clicked_event_link;
 
 Future setLocalData() async {
-  SharedPreferences pref = await SharedPreferences.getInstance();
-  pref.setString('uId', uId);
-  pref.setString('uType', uType);
+  SharedPreferences sp = await SharedPreferences.getInstance();
+  sp.setString("uType", uType);
+  sp.setString("email", email);
+  sp.setString("uId", uId);
+  sp.setString("fName", fName);
+  sp.setString("mName", mName);
+  sp.setString("lName", lName);
+  sp.setString("course", course);
+  sp.setString("studentClass", studentClass);
+  sp.setString("phone", phone);
+  sp.setString("department", department);
+  sp.setString("photo", photo);
+  sp.setString("year", year);
+  sp.setString("accountType", accountType);
+  sp.setString("semester", semester);
 }
 
 Future getLocalData() async {
-  SharedPreferences pref = await SharedPreferences.getInstance();
-  uType = pref.getString('uType') ?? uType;
-  uId = pref.getString('uId') ?? uId;
+  SharedPreferences sp = await SharedPreferences.getInstance();
+  uType = sp.getString("uType") ?? uType;
+  email = sp.getString("email") ?? email;
+  uId = sp.getString("uId") ?? uId;
+  fName = sp.getString("fName") ?? fName;
+  mName = sp.getString(
+        "mName",
+      ) ??
+      mName;
+  lName = sp.getString(
+        "lName",
+      ) ??
+      lName;
+  course = sp.getString(
+        "course",
+      ) ??
+      course;
+  studentClass = sp.getString(
+        "studentClass",
+      ) ??
+      studentClass;
+  phone = sp.getString(
+        "phone",
+      ) ??
+      phone;
+  department = sp.getString(
+        "department",
+      ) ??
+      department;
+  photo = sp.getString(
+        "photo",
+      ) ??
+      photo;
+  year = sp.getString(
+        "year",
+      ) ??
+      year;
+  accountType = sp.getString(
+        "accountType",
+      ) ??
+      accountType;
+  semester = sp.getString(
+        "semester",
+      ) ??
+      semester;
 }
 
 Future removeLocalData() async {
-  final pref = await SharedPreferences.getInstance();
-  await pref.remove('uType');
-  await pref.remove('uId');
+  final sp = await SharedPreferences.getInstance();
+  await sp.remove('uType');
+  await sp.remove('email');
+  await sp.remove('uId');
+  await sp.remove('fName');
+  await sp.remove('mName');
+  await sp.remove('lName');
+  await sp.remove('course');
+  await sp.remove('studentClass');
+  await sp.remove('phone');
+  await sp.remove('department');
+  await sp.remove('photo');
+  await sp.remove('year');
+  await sp.remove('accountType');
+  await sp.remove('semester');
 }
 
 //Profile Page Build

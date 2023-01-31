@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_college_app/AdminPanel/add_class.dart';
+import 'package:flutter_college_app/AdminPanel/add_event.dart';
+import 'package:flutter_college_app/AdminPanel/add_student.dart';
+import 'package:flutter_college_app/AdminPanel/add_teacher.dart';
+import 'package:flutter_college_app/AdminPanel/update_student.dart';
+import 'package:flutter_college_app/util/events_util.dart';
 
 class AdminPanel extends StatelessWidget {
   const AdminPanel({super.key});
@@ -21,7 +27,8 @@ class AdminPanel extends StatelessWidget {
         children: [
           InkWell(
             onTap: () {
-              Navigator.pushNamed(context, '/adminPanel/addStudent');
+              Navigator.push(context,
+                  MaterialPageRoute(builder: ((context) => AddStudent())));
             },
             child: Card(
               elevation: 4,
@@ -39,7 +46,8 @@ class AdminPanel extends StatelessWidget {
           ),
           InkWell(
             onTap: () {
-              Navigator.pushNamed(context, '/adminPanel/updateStudent');
+              Navigator.push(context,
+                  MaterialPageRoute(builder: ((context) => UpdateStudent())));
             },
             child: Card(
               elevation: 4,
@@ -57,7 +65,8 @@ class AdminPanel extends StatelessWidget {
           ),
           InkWell(
             onTap: () {
-              Navigator.pushNamed(context, '/adminPanel/addTeacher');
+              Navigator.push(context,
+                  MaterialPageRoute(builder: ((context) => AddTeacher())));
             },
             child: Card(
               elevation: 4,
@@ -86,17 +95,23 @@ class AdminPanel extends StatelessWidget {
               ],
             ),
           ),
-          Card(
-            elevation: 4,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.add_home_work_outlined,
-                  size: 35,
-                ),
-                Text('New Class'),
-              ],
+          InkWell(
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: ((context) => AddClass())));
+            },
+            child: Card(
+              elevation: 4,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add_home_work_outlined,
+                    size: 35,
+                  ),
+                  Text('New Class'),
+                ],
+              ),
             ),
           ),
           Card(
@@ -112,17 +127,23 @@ class AdminPanel extends StatelessWidget {
               ],
             ),
           ),
-          Card(
-            elevation: 4,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.event_available_outlined,
-                  size: 35,
-                ),
-                Text('Add Event'),
-              ],
+          InkWell(
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: ((context) => AddNewEvent())));
+            },
+            child: Card(
+              elevation: 4,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.event_available_outlined,
+                    size: 35,
+                  ),
+                  Text('Add Event'),
+                ],
+              ),
             ),
           ),
           Card(

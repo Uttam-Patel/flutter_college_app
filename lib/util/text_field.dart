@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 //Simple TextField
 
-class AddTextField extends StatelessWidget {
+class AddTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final String label;
   final TextEditingController? controller;
@@ -19,6 +19,11 @@ class AddTextField extends StatelessWidget {
   });
 
   @override
+  State<AddTextField> createState() => _AddTextFieldState();
+}
+
+class _AddTextFieldState extends State<AddTextField> {
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -28,7 +33,7 @@ class AddTextField extends StatelessWidget {
         ),
         decoration: BoxDecoration(),
         child: TextFormField(
-          enabled: enabled,
+          enabled: widget.enabled,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter some text';
@@ -37,11 +42,25 @@ class AddTextField extends StatelessWidget {
             }
             return null;
           },
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
+          controller: widget.controller,
+          obscureText: widget.obscureText,
+          keyboardType: widget.keyboardType,
           decoration: InputDecoration(
-            labelText: label,
+            suffixIcon: Visibility(
+              visible: widget.enabled == false,
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    widget.enabled == true;
+                  });
+                },
+                child: const Icon(
+                  Icons.edit,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            labelText: widget.label,
             errorBorder: OutlineInputBorder(
               borderSide: BorderSide(
                 color: Colors.red,
@@ -105,6 +124,64 @@ class DropTextField extends StatelessWidget {
           dropdownRadius: 0,
           controller: controller,
           keyboardType: keyboardType,
+          textFieldDecoration: InputDecoration(
+            labelText: label,
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+            errorBorder: const OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.red,
+              ),
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+//DropDown TextField Multiple Select
+
+class MultiDropTextField extends StatelessWidget {
+  final List<DropDownValueModel> dropDownList;
+  final String label;
+  List selectedItems = [];
+  final MultiValueDropDownController? controller;
+  MultiDropTextField({
+    super.key,
+    required this.dropDownList,
+    required this.label,
+    this.controller,
+    required this.selectedItems,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: 20,
+        ),
+        decoration: BoxDecoration(),
+        child: DropDownTextField.multiSelection(
+          onChanged: (value) {},
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please select an option';
+            }
+            return null;
+          },
+          dropDownList: dropDownList,
+          displayCompleteItem: true,
+          dropdownRadius: 0,
+          controller: controller,
           textFieldDecoration: InputDecoration(
             labelText: label,
             focusedBorder: OutlineInputBorder(

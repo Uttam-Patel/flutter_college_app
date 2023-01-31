@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import '/AdminPanel/admin_panel.dart';
 
+import 'AdminPanel/add_class.dart';
 import 'AdminPanel/add_student.dart';
 import 'AdminPanel/add_teacher.dart';
 import 'AdminPanel/update_student.dart';
@@ -24,23 +25,17 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: "Roboto"),
       title: 'Login UI',
-      home: StreamBuilder(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: ((context, snapshot) {
-          if (snapshot.hasData) {
-            return Home();
-          } else {
-            return LogIn();
-          }
-        }),
-      ),
-      routes: {
-        '/login': (context) => const LogIn(),
-        '/adminPanel': (context) => const AdminPanel(),
-        '/adminPanel/addStudent': (context) => const AddStudent(),
-        '/adminPanel/updateStudent': (context) => const UpdateStudent(),
-        '/adminPanel/addTeacher': (context) => const AddTeacher(),
-      },
+      home: LogIn(),
+      // home: StreamBuilder(
+      //   stream: FirebaseAuth.instance.authStateChanges(),
+      //   builder: ((context, snapshot) {
+      //     if (snapshot.hasData) {
+      //       return Home();
+      //     } else {
+      //       return LogIn();
+      //     }
+      //   }),
+      // ),
     );
   }
 }

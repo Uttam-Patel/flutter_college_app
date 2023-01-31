@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_college_app/util/chat_room.dart';
+import 'package:flutter_college_app/util/Classroom/chat_room.dart';
+import 'package:flutter_college_app/util/Classroom/class_list.dart';
+import 'package:flutter_college_app/util/Classroom/class_notes.dart';
+
+import '../util/Classroom/class_streams.dart';
+import '../util/constants.dart';
 
 class Classroom extends StatelessWidget {
   const Classroom({super.key});
@@ -17,12 +22,9 @@ class Classroom extends StatelessWidget {
             overlayColor: MaterialStateProperty.all(Colors.blue),
             tabs: <Tab>[
               Tab(
-                child: Column(
-                  children: [
-                    Icon(Icons.stream),
-                    Text('Class Stream'),
-                  ],
-                ),
+                child: (uType == 'Student')
+                    ? Text('Class Stream')
+                    : Text('Classes'),
               ),
               Tab(
                 child: Text('Notes'),
@@ -40,19 +42,37 @@ class Classroom extends StatelessWidget {
                 child: Text('Faculties'),
               )
             ]),
-        body: const TabBarView(
+        body: TabBarView(
           children: <Widget>[
             Center(
-              child: Text('Class Stream'),
+              child: (uType == 'Student')
+                  ? ClassStream(
+                      className: studentClass,
+                    )
+                  : ClassList(
+                      nav: 's',
+                    ),
             ),
             Center(
-              child: Text('Notes'),
+              child: (uType == 'Student')
+                  ? ClassNotes(
+                      className: studentClass,
+                    )
+                  : ClassList(
+                      nav: 'n',
+                    ),
             ),
             Center(
               child: Text('Assignments'),
             ),
             Center(
-              child: ClassChat(),
+              child: (uType == 'Student')
+                  ? ClassChat(
+                      className: studentClass,
+                    )
+                  : ClassList(
+                      nav: 'c',
+                    ),
             ),
             Center(
               child: Text('Members'),

@@ -148,11 +148,11 @@ class _UserLogInState extends State<UserLogIn> {
         password: passwordController.text,
       )
           .then((value) async {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const Home()));
         uType = widget.user;
         uId = idController.text;
         await setLocalData();
+        Navigator.pushAndRemoveUntil(context,
+            MaterialPageRoute(builder: (context) => Home()), (route) => false);
       });
     } on FirebaseAuthException catch (error) {
       print(error.message!);

@@ -29,6 +29,25 @@ class _AddStudentState extends State<AddStudent> {
   final SingleValueDropDownController course = SingleValueDropDownController();
   final SingleValueDropDownController year = SingleValueDropDownController();
 
+  //MultiValueDropDownController
+  final SingleValueDropDownController studentClass =
+      SingleValueDropDownController();
+
+  List<String> studentClassNames = [];
+  List<String> studentClassInitYear = [];
+  List<String> studentClassFinalYear = [];
+  List<DropDownValueModel> studentClassList = [];
+  List selectedClass = [];
+
+  String classSem = '';
+  String classDepartment = '';
+
+  @override
+  void initState() {
+    buildStudentClassList();
+    super.initState();
+  }
+
   //Controller Dispose
   @override
   void dispose() {
@@ -42,6 +61,7 @@ class _AddStudentState extends State<AddStudent> {
     semester.dispose();
     year.dispose();
     super.dispose();
+    studentClass.dispose();
   }
 
   final formKey = GlobalKey<FormState>();
@@ -139,6 +159,13 @@ class _AddStudentState extends State<AddStudent> {
                   label: 'Semester',
                 ),
 
+                DropTextField(
+                  controller: studentClass,
+                  count: 5,
+                  dropDownList: studentClassList,
+                  label: 'Class',
+                ),
+
                 //Buttons 'Create Student' and 'Clear'
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -150,8 +177,6 @@ class _AddStudentState extends State<AddStudent> {
                         onPressed: () async {
                           if (formKey.currentState!.validate()) {
                             addUser();
-                            await signUp();
-                            passwordReset();
                           }
                         },
                         style: ButtonStyle(
@@ -208,9 +233,47 @@ class _AddStudentState extends State<AddStudent> {
 
   Future addUser() async {
     await FirebaseFirestore.instance
-        .collection('Student')
-        .doc(enrollment.text)
-        .set({
+        .collection('Class')
+        .doc(studentClass.dropDownValue!.name)
+        .get()
+        .then((value) {
+      setState(() {
+        classSem = value['semester'];
+        classDepartment = value['department'];
+      });
+    });
+    if (semester.dropDownValue!.name == classSem) {
+      if (course.dropDownValue!.name == classDepartment) {
+        await FirebaseFirestore.instance
+            .collection('Student')
+            .doc(enrollment.text)
+            .set({
+              'firstName': fName.text,
+              'lastName': lName.text,
+              'middleName': mName.text,
+              'email': emailId.text,
+              'enrollment': enrollment.text,
+              'phone': phone.text,
+              'course': course.dropDownValue!.value,
+              'year': year.dropDownValue!.value,
+              'semester': semester.dropDownValue!.value,
+              'accountType': 'Student',
+              'class': studentClass.dropDownValue!.name,
+              'photo':
+                  'https://t4.ftcdn.net/jpg/00/97/00/09/360_F_97000908_wwH2goIihwrMoeV9QF3BW6HtpsVFaNVM.jpg',
+            })
+            .onError((error, _) => print('Error creating Student : $error'))
+            .then((value) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Data Processing...')),
+              );
+            });
+        await FirebaseFirestore.instance
+            .collection('Class')
+            .doc(studentClass.dropDownValue!.name)
+            .collection('Student')
+            .doc(enrollment.text)
+            .set({
           'firstName': fName.text,
           'lastName': lName.text,
           'middleName': mName.text,
@@ -221,15 +284,26 @@ class _AddStudentState extends State<AddStudent> {
           'year': year.dropDownValue!.value,
           'semester': semester.dropDownValue!.value,
           'accountType': 'Student',
+          'class': studentClass.dropDownValue!.name,
           'photo':
               'https://t4.ftcdn.net/jpg/00/97/00/09/360_F_97000908_wwH2goIihwrMoeV9QF3BW6HtpsVFaNVM.jpg',
-        })
-        .onError((error, _) => print('Error creating Student : $error'))
-        .then((value) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Data Processing...')),
-          );
-        });
+        }).onError((error, _) => print('Error updating class data : $error'));
+        await signUp();
+        passwordReset();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Class is not for ${course.dropDownValue!.name} department students\nTry Using - $classDepartment or change the class')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'Class is not for ${semester.dropDownValue!.name} semester students\nTry Using - $classSem or change the class')),
+      );
+    }
   }
 
   Future signUp() async {
@@ -259,5 +333,31 @@ class _AddStudentState extends State<AddStudent> {
         const SnackBar(content: Text('Password reset mail sended')),
       );
     });
+  }
+
+  Future getStudentClassNames() async {
+    await FirebaseFirestore.instance
+        .collection('Class')
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        studentClassNames.add(doc["className"] +
+            ' (' +
+            doc["joinedYear"] +
+            ' - ' +
+            doc["finalYear"] +
+            ')');
+      });
+    });
+  }
+
+  Future buildStudentClassList() async {
+    await getStudentClassNames();
+    for (int i = 0; i < studentClassNames.length; i++) {
+      setState(() {
+        studentClassList
+            .add(DropDownValueModel(name: studentClassNames[i], value: [i]));
+      });
+    }
   }
 }

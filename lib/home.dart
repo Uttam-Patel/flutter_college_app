@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../Home/class.dart';
 import '../Home/dashboard.dart';
@@ -29,6 +30,7 @@ class _HomeState extends State<Home> {
     // TODO: implement initState
     super.initState();
     getLocalData();
+    userData();
   }
 
   @override
@@ -51,7 +53,12 @@ class _HomeState extends State<Home> {
               return [
                 PopupMenuItem(
                   child: const Text('Refresh'),
-                  onTap: () {},
+                  onTap: () {
+                    setState(() {
+                      getLocalData();
+                      userData();
+                    });
+                  },
                 ),
                 PopupMenuItem(
                   child: const Text('Report'),
@@ -99,5 +106,34 @@ class _HomeState extends State<Home> {
         ],
       ),
     );
+  }
+
+  Future userData() async {
+    await FirebaseFirestore.instance
+        .collection(uType)
+        .doc(uId)
+        .get()
+        .then((snapshot) async {
+      if (snapshot.exists) {
+        setState(() {
+          fName = snapshot.data()!['firstName'];
+          lName = snapshot.data()!['lastName'];
+          phone = snapshot.data()!['phone'];
+          accountType = snapshot.data()!['accountType'];
+          email = snapshot.data()!['email'];
+          photo = snapshot.data()!['photo'];
+
+          if (uType == 'Student') {
+            semester = snapshot.data()!['semester'];
+            year = snapshot.data()!['year'];
+            course = snapshot.data()!['course'];
+            studentClass = snapshot.data()!['class'];
+          }
+          if (uType == 'Teacher') {
+            department = snapshot.data()!['department'];
+          }
+        });
+      }
+    });
   }
 }

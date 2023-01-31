@@ -5,10 +5,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 
-import 'constants.dart';
+import '../constants.dart';
 
 class ClassChat extends StatefulWidget {
-  const ClassChat({super.key});
+  final String className;
+  const ClassChat({super.key, required this.className});
 
   @override
   ClassChatState createState() => ClassChatState();
@@ -25,9 +26,8 @@ class ClassChatState extends State<ClassChat> {
   void initState() {
     super.initState();
     final now = DateTime.now().toUtc();
-    this._firebaseMsgDbRef = FirebaseDatabase.instance
-        .ref()
-        .child('messages/${now.year}/${now.month}/${now.day}');
+    this._firebaseMsgDbRef =
+        FirebaseDatabase.instance.ref().child('messages/${widget.className}');
     this._user = firebase_auth.FirebaseAuth.instance.currentUser;
   }
 
