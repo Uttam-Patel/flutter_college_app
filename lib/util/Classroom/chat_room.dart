@@ -172,3 +172,25 @@ class ClassChatState extends State<ClassChat> {
     });
   }
 }
+
+class AdminChat extends StatefulWidget {
+  const AdminChat({super.key});
+
+  @override
+  State<AdminChat> createState() => _AdminChatState();
+}
+
+class _AdminChatState extends State<AdminChat> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Class Chat'),
+        centerTitle: true,
+      ),
+      body: ClassChat(
+          className:
+              '${classNameStream} (${classJoinedYear} - ${classFinalYear})'),
+    );
+  }
+}

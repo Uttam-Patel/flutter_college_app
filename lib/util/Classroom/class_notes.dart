@@ -567,3 +567,25 @@ class _ClassNotesState extends State<ClassNotes> {
     OpenFile.open('${dir.path}/${fileName}.${fileExt}');
   }
 }
+
+class AddNotes extends StatefulWidget {
+  const AddNotes({super.key});
+
+  @override
+  State<AddNotes> createState() => _AddNotesState();
+}
+
+class _AddNotesState extends State<AddNotes> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Class Notes'),
+        centerTitle: true,
+      ),
+      body: ClassNotes(
+          className:
+              '${classNameStream} (${classJoinedYear} - ${classFinalYear})'),
+    );
+  }
+}

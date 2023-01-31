@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: "Roboto"),
       title: 'Login UI',
-      home: LogIn(),
+      // home: LogIn(),
       // home: StreamBuilder(
       //   stream: FirebaseAuth.instance.authStateChanges(),
       //   builder: ((context, snapshot) {
@@ -36,6 +36,25 @@ class MyApp extends StatelessWidget {
       //     }
       //   }),
       // ),
+      routes: {
+        '/adminPanel': (context) => const AdminPanel(),
+      },
+      initialRoute:
+          FirebaseAuth.instance.currentUser == null ? 'login' : 'home',
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case 'home':
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (_) => Home(),
+            );
+          case 'login':
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (_) => LogIn(),
+            );
+        }
+      },
     );
   }
 }

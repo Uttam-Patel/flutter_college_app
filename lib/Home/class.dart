@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_college_app/util/Classroom/chat_room.dart';
 import 'package:flutter_college_app/util/Classroom/class_list.dart';
 import 'package:flutter_college_app/util/Classroom/class_notes.dart';
+import 'package:flutter_college_app/util/Classroom/member_list.dart';
 
 import '../util/Classroom/class_streams.dart';
 import '../util/constants.dart';
@@ -21,11 +22,7 @@ class Classroom extends StatelessWidget {
             labelColor: Colors.blue,
             overlayColor: MaterialStateProperty.all(Colors.blue),
             tabs: <Tab>[
-              Tab(
-                child: (uType == 'Student')
-                    ? Text('Class Stream')
-                    : Text('Classes'),
-              ),
+              Tab(child: Text('Class Stream')),
               Tab(
                 child: Text('Notes'),
               ),
@@ -75,10 +72,22 @@ class Classroom extends StatelessWidget {
                     ),
             ),
             Center(
-              child: Text('Members'),
+              child: (uType == 'Student')
+                  ? MemberList(
+                      className: studentClass,
+                    )
+                  : ClassList(
+                      nav: 'm',
+                    ),
             ),
             Center(
-              child: Text('Faculties'),
+              child: (uType == 'Student')
+                  ? TeacherList(
+                      className: studentClass,
+                    )
+                  : ClassList(
+                      nav: 'f',
+                    ),
             ),
           ],
         ),

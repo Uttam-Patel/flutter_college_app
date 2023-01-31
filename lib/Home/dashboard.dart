@@ -1,146 +1,121 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class Dashboard extends StatelessWidget {
+import '../util/constants.dart';
+import '../util/events_util.dart';
+
+class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 
   @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  List eventTitle = [];
+  List eventDetails = [];
+  List eventCoverPhoto = [];
+  List timestamp = [];
+  List eventJoinLink = [];
+  @override
+  void initState() {
+    // TODO: implement initState
+    getEvents();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    eventJoinLink.clear();
+    timestamp.clear();
+    eventCoverPhoto.clear();
+    eventDetails.clear();
+    eventTitle.clear();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Container(
-            constraints: const BoxConstraints(minHeight: 100, minWidth: 100),
-            margin: const EdgeInsets.all(10),
-            height: MediaQuery.of(context).size.height / 4.5,
-            width: MediaQuery.of(context).size.width / 1.2,
-            decoration: BoxDecoration(
-              color: Colors.grey,
-              border: Border.all(
-                color: Colors.black,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(
-                  offset: Offset(2, 2),
-                  color: Colors.white,
-                  blurRadius: 2,
+    if (eventTitle.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      return ListView.builder(
+        itemCount: eventTitle.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+              child: InkWell(
+                onTap: () {
+                  clicked_event_title = eventTitle[index];
+                  clicked_event_about = eventDetails[index];
+                  clicked_event_link = eventCoverPhoto[index];
+                  clicked_event_duedate = timestamp[index].toDate();
+                  print(clicked_event_duedate);
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => EventPage()));
+                },
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Container(
+                      height: 220,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: NetworkImage(eventCoverPhoto[index]),
+                            fit: BoxFit.cover),
+                        color: Colors.lightBlueAccent[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        // crossAxisAlignment: CrossAxisAlignment.baseline,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                                color: Colors.black87,
+                                borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(12),
+                                    bottomRight: Radius.circular(12))),
+                            width: MediaQuery.of(context).size.width,
+                            child: Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Text(
+                                eventTitle[index],
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )),
                 ),
-                BoxShadow(
-                  offset: Offset(-2, -2),
-                  color: Colors.white,
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-            child: const Center(child: Text('Event Container')),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                constraints: const BoxConstraints(
-                  minHeight: 70,
-                ),
-                margin: const EdgeInsets.all(10),
-                height: MediaQuery.of(context).size.height / 7,
-                width: MediaQuery.of(context).size.width / 2.5,
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  border: Border.all(
-                    color: Colors.black,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(child: Text('Seminar')),
-              ),
-              Container(
-                constraints: const BoxConstraints(
-                  minHeight: 70,
-                ),
-                margin: const EdgeInsets.all(10),
-                height: MediaQuery.of(context).size.height / 7,
-                width: MediaQuery.of(context).size.width / 2.5,
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  border: Border.all(
-                    color: Colors.black,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(child: Text('Project')),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                constraints: const BoxConstraints(
-                  minHeight: 70,
-                ),
-                margin: const EdgeInsets.all(10),
-                height: MediaQuery.of(context).size.height / 7,
-                width: MediaQuery.of(context).size.width / 2.5,
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  border: Border.all(
-                    color: Colors.black,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(child: Text('Attendence')),
-              ),
-              Container(
-                constraints: const BoxConstraints(
-                  minHeight: 70,
-                ),
-                margin: const EdgeInsets.all(10),
-                height: MediaQuery.of(context).size.height / 7,
-                width: MediaQuery.of(context).size.width / 2.5,
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  border: Border.all(
-                    color: Colors.black,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(child: Text('Syllabus')),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                margin: const EdgeInsets.all(10),
-                height: MediaQuery.of(context).size.height / 7,
-                width: MediaQuery.of(context).size.width / 2.5,
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  border: Border.all(
-                    color: Colors.black,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(child: Text('NSS')),
-              ),
-              Container(
-                margin: const EdgeInsets.all(10),
-                height: MediaQuery.of(context).size.height / 7,
-                width: MediaQuery.of(context).size.width / 2.5,
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  border: Border.all(
-                    color: Colors.black,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(child: Text('NCC')),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
+              ));
+        },
+      );
+    }
+  }
+
+  Future getEvents() async {
+    await FirebaseFirestore.instance
+        .collection('Events')
+        .orderBy('createdLink', descending: true)
+        .get()
+        .then((value) {
+      value.docs.forEach((doc) {
+        setState(() {
+          eventTitle.add(doc["Title"]);
+          eventDetails.add(doc["About"]);
+          eventCoverPhoto.add(doc["Link"]);
+          timestamp.add(doc["Due Date"]);
+          eventJoinLink.add(doc["joinLink"]);
+        });
+      });
+    });
   }
 }

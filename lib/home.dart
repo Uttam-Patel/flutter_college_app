@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 import '../Home/class.dart';
 import '../Home/dashboard.dart';
@@ -21,15 +22,17 @@ class _HomeState extends State<Home> {
     const Dashboard(),
     const Classroom(),
     const LiveClass(),
-    Profile(),
+    const Profile(),
   ];
   Widget currentScreen = const Dashboard();
+
+  List classNames = [];
+  List<DropDownValueModel> classNamesDropDownList = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getLocalData();
     userData();
   }
 
@@ -40,7 +43,7 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         centerTitle: true,
         title: (index == 0)
-            ? const Text('Dashboard')
+            ? const Text('LDRP-ITR')
             : ((index == 1)
                 ? const Text('Classroom')
                 : ((index == 2)
@@ -109,31 +112,107 @@ class _HomeState extends State<Home> {
   }
 
   Future userData() async {
-    await FirebaseFirestore.instance
-        .collection(uType)
-        .doc(uId)
-        .get()
-        .then((snapshot) async {
-      if (snapshot.exists) {
-        setState(() {
-          fName = snapshot.data()!['firstName'];
-          lName = snapshot.data()!['lastName'];
-          phone = snapshot.data()!['phone'];
-          accountType = snapshot.data()!['accountType'];
-          email = snapshot.data()!['email'];
-          photo = snapshot.data()!['photo'];
+    if (uType.isEmpty) {
+      await getLocalData().then((value) => FirebaseFirestore.instance
+              .collection(uType)
+              .doc(uId)
+              .get()
+              .then((snapshot) async {
+            if (snapshot.exists) {
+              setState(() {
+                fName = snapshot.data()!['firstName'];
+                lName = snapshot.data()!['lastName'];
+                phone = snapshot.data()!['phone'];
+                accountType = snapshot.data()!['accountType'];
+                email = snapshot.data()!['email'];
+                photo = snapshot.data()!['photo'];
 
-          if (uType == 'Student') {
-            semester = snapshot.data()!['semester'];
-            year = snapshot.data()!['year'];
-            course = snapshot.data()!['course'];
-            studentClass = snapshot.data()!['class'];
-          }
-          if (uType == 'Teacher') {
-            department = snapshot.data()!['department'];
-          }
+                if (uType == 'Student') {
+                  semester = snapshot.data()!['semester'];
+                  year = snapshot.data()!['year'];
+                  course = snapshot.data()!['course'];
+                  studentClass = snapshot.data()!['class'];
+                }
+                if (uType == 'Teacher') {
+                  department = snapshot.data()!['department'];
+                }
+              });
+            }
+          }));
+    } else {
+      await FirebaseFirestore.instance
+          .collection(uType)
+          .doc(uId)
+          .get()
+          .then((snapshot) async {
+        if (snapshot.exists) {
+          setState(() {
+            fName = snapshot.data()!['firstName'];
+            lName = snapshot.data()!['lastName'];
+            phone = snapshot.data()!['phone'];
+            accountType = snapshot.data()!['accountType'];
+            email = snapshot.data()!['email'];
+            photo = snapshot.data()!['photo'];
+
+            if (uType == 'Student') {
+              semester = snapshot.data()!['semester'];
+              year = snapshot.data()!['year'];
+              course = snapshot.data()!['course'];
+              studentClass = snapshot.data()!['class'];
+            }
+            if (uType == 'Teacher') {
+              department = snapshot.data()!['department'];
+            }
+          });
+          await setLocalData();
+        }
+      });
+    }
+  }
+
+  Future getClassNames() async {
+    if (uType == 'Admin') {
+      await FirebaseFirestore.instance
+          .collection('Class')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          classNames.add(doc["className"] +
+              ' (' +
+              doc["joinedYear"] +
+              ' - ' +
+              doc["finalYear"] +
+              ')');
+        });
+      });
+
+      if (uType == 'Teacher') {
+        await FirebaseFirestore.instance
+            .collection('Class')
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          querySnapshot.docs.forEach((doc) {
+            if (uId == doc['mentorID']) {
+              classNames.add(doc["className"] +
+                  ' (' +
+                  doc["joinedYear"] +
+                  ' - ' +
+                  doc["finalYear"] +
+                  ')');
+            }
+          });
         });
       }
-    });
+    }
+
+    Future buildClassList() async {
+      await getClassNames();
+      for (int i = 0; i < classNames.length; i++) {
+        setState(() {
+          classNamesDropDownList
+              .add(DropDownValueModel(name: classNames[i], value: [i]));
+        });
+      }
+    }
   }
 }

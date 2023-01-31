@@ -296,5 +296,18 @@ class _AddClassState extends State<AddClass> {
             const SnackBar(content: Text('Class Created')),
           );
         });
+
+    await FirebaseFirestore.instance
+        .collection('Class')
+        .doc('${className.text} (${initYear.text} - ${finalYear.text})')
+        .collection('Teacher')
+        .doc(teacherID[teachers.dropDownValue!.value])
+        .set({
+      'teacherID': teacherID[teachers.dropDownValue!.value],
+      'firstName': teacherF[teachers.dropDownValue!.value],
+      'lastName': teacherL[teachers.dropDownValue!.value],
+      'name': teachersList[teachers.dropDownValue!.value],
+      'photo': tPhoto[teachers.dropDownValue!.value],
+    });
   }
 }

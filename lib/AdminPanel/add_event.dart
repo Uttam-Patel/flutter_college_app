@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_time_format/date_time_format.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddNewEvent extends StatefulWidget {
   const AddNewEvent({Key? key}) : super(key: key);
@@ -13,11 +17,16 @@ class _AddNewEventState extends State<AddNewEvent> {
   final _formkey = GlobalKey<FormState>();
   int count = 0;
 
-  var _titlecontroller = TextEditingController();
-  var _coordinatorcontroller = TextEditingController();
-  var _aboutcontroller = TextEditingController();
+  TextEditingController _titlecontroller = TextEditingController();
+  TextEditingController _coordinatorcontroller = TextEditingController();
+  TextEditingController _aboutcontroller = TextEditingController();
+  TextEditingController linkController = TextEditingController();
   DateTime? dueDate;
+  DateTime? now = DateTime.now();
   String lableDate = "";
+  String coverPhoto = "";
+  File? _imageFile;
+  final _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +74,10 @@ class _AddNewEventState extends State<AddNewEvent> {
                     lastDate: DateTime(2025),
                   );
                   setState(() {
-                    lableDate = DateTimeFormat.format(dueDate!,
-                        format: AmericanDateFormats.dayOfWeek);
+                    if (dueDate != null) {
+                      lableDate = DateTimeFormat.format(dueDate!,
+                          format: AmericanDateFormats.dayOfWeek);
+                    }
                   });
                 },
                 child: Container(
@@ -129,6 +140,36 @@ class _AddNewEventState extends State<AddNewEvent> {
                   ),
                 ),
               ),
+              SizedBox(height: 15),
+              TextFormField(
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return "Enter Joining Link";
+                  }
+                },
+                controller: linkController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                    color: Colors.teal,
+                  )),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                    color: Colors.orange,
+                    width: 3,
+                  )),
+                  labelText: "Event Join Link",
+                  labelStyle: TextStyle(
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              IconButton(
+                  onPressed: _pickImageFromGallery,
+                  icon: Icon(Icons.browse_gallery)),
               SizedBox(height: 30),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -156,8 +197,9 @@ class _AddNewEventState extends State<AddNewEvent> {
                   ),
                   InkWell(
                     onTap: () async {
-                      if (_formkey.currentState!.validate()) {
-                        await SubmitDetails();
+                      if (_formkey.currentState!.validate() &&
+                          _imageFile != null) {
+                        await _uploadImageToFirebaseStorage();
                       }
                     },
                     child: Container(
@@ -195,12 +237,53 @@ class _AddNewEventState extends State<AddNewEvent> {
       "Coordinator": _coordinatorcontroller.text,
       "About": _aboutcontroller.text,
       "Due Date": dueDate,
-      "Link":
-          'https://english-blog.s3.amazonaws.com/uploads/2020/06/Celebrating-The-Unsung-Hero-This-World-Blood-Donor-Day.jpg',
+      "Link": coverPhoto,
+      "joinLink": linkController.text,
+      "createdLink": now,
     }).onError((error, _) => print('Error to creating a New Event : $error'));
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('New Event Created')),
     );
+  }
+
+  Future<void> _uploadImageToFirebaseStorage() async {
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('images/events/${_titlecontroller.text}');
+
+    try {
+      if (this._imageFile != null) {
+        storageRef.putFile(this._imageFile!).whenComplete(() async {
+          await _updateCoverImage();
+          await SubmitDetails();
+        });
+      }
+    } on FirebaseException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.message!),
+      ));
+    }
+  }
+
+  _updateCoverImage() async {
+    coverPhoto = await _updateCoverPhotoPath();
+  }
+
+  Future<String> _updateCoverPhotoPath() async {
+    final imgUrl = FirebaseStorage.instance
+        .ref()
+        .child('images/events/${_titlecontroller.text}')
+        .getDownloadURL();
+    return imgUrl;
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        this._imageFile = File(pickedFile.path);
+      });
+    }
   }
 }

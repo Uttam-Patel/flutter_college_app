@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_college_app/util/Classroom/admin_chat.dart';
 
 import '../constants.dart';
-import 'teacher_notes.dart';
-import 'teacher_stream.dart';
+import 'chat_room.dart';
+import 'class_notes.dart';
+import 'class_streams.dart';
+import 'member_list.dart';
 
 class ClassList extends StatefulWidget {
   final String nav;
@@ -49,6 +50,28 @@ class _ClassListState extends State<ClassList> {
                   classFinalYear = finalYear[index];
                 });
                 switch (widget.nav) {
+                  case 'm':
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MemberList(
+                          className:
+                              '${classNameStream} (${classJoinedYear} - ${classFinalYear})',
+                        ),
+                      ),
+                    );
+                    break;
+                  case 'f':
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TeacherList(
+                          className:
+                              '${classNameStream} (${classJoinedYear} - ${classFinalYear})',
+                        ),
+                      ),
+                    );
+                    break;
                   case 's':
                     Navigator.push(
                       context,

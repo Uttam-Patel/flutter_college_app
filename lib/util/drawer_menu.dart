@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_college_app/AdminPanel/admin_panel.dart';
 import '../login/login_screen.dart';
 import 'constants.dart';
 
@@ -70,8 +69,7 @@ class MenuDrawer extends StatelessWidget {
                   leading: Icon(Icons.security),
                   title: Text('Admin Panel'),
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => AdminPanel()));
+                    Navigator.popAndPushNamed(context, '/adminPanel');
                   },
                 ),
               ),
